@@ -18,6 +18,9 @@ fn main() {
             let nextValue = pop_next(&args, i);
             actionHash.insert(x, nextValue);
         }
+        if is_stand_alone_option(x) {
+            actionHash.insert(x, "".to_string());
+        }
     }
 
     for (k, v) in actionHash {
