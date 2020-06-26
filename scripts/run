@@ -1,0 +1,7 @@
+set -e
+sudo rm -rf bin
+sudo mkdir -p bin
+sudo cargo build
+sudo rm -f /usr/local/bin/kogeki
+sudo mv target/debug/kogeki /usr/local/bin/
+kogeki $*
