@@ -4,6 +4,8 @@ use curl::easy::Easy;
 use regex::Regex;
 use std::collections::HashMap;
 use std::env;
+use std::io::{stdin, Read};
+use std::io::{stdout, Write};
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -42,13 +44,28 @@ fn main() {
     // if it starts from https:// needs to replace it with http 
     println!("url:          {}:{}", host, port);
     println!("api-key-file: {}", api_key_file);
+    request(format!("http://{}:{}/api/auth/token", host, port));
 }
 
 //
 // using curl module, request to the target with parameters...
 //
-fn request() {
-
+fn request(url: String) {
+    let mut handle = Easy::new();
+    let mut data   = Vec::new();
+    handle.url(&*url).unwrap();
+    handle.post(true).unwrap();
+    handle.perform().unwrap();
+    {
+        let mut transfer = handle.transfer();
+        transfer.write_function(|into| {
+            data.extend_from_slice(into);
+            Ok(stdout().write(into).unwrap())
+        }).unwrap();
+        transfer.perform().unwrap();
+    }
+    println!("{:?}", String::from_utf8(data).unwrap());
+    //println!("---> {:?}", x);
 }
 
 fn safe_get(action_hash: &HashMap<&String, String>, key: &String) -> String {
