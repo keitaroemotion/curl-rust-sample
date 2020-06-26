@@ -26,10 +26,10 @@ fn main() {
     let mut host         = safe_get(&action_hash, &"-h".to_string());
     let mut port         = safe_get(&action_hash, &"-p".to_string());
     let mut api_key_file = safe_get(&action_hash, &"-f".to_string());
+    let mut dry_run      = &action_hash.contains_key(&"--dry-run".to_string());
 
-    for (k, v) in action_hash {
-        println!("{}: {}", k, v)
-    }
+    println!("url:          {}:{}", host, port);
+    println!("api-key-file: {}", api_key_file);
 }
 
 fn safe_get(action_hash: &HashMap<&String, String>, key: &String) -> String {
