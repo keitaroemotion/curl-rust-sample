@@ -1,6 +1,7 @@
 extern crate regex;
 
 use curl::easy::Easy;
+use curl::easy::List;
 use regex::Regex;
 use std::collections::HashMap;
 use std::env;
@@ -49,7 +50,6 @@ fn main() {
 
     let mut vec = Vec::new();
     for line in contents.split("\n") {
-        // TODO: needs refactor
         if (&line).starts_with("Client ID=") {
             vec.push((&line).replace("Client ID=", ""));
         }
@@ -61,9 +61,7 @@ fn main() {
     println!("url:          {}:{}", host, port);
     println!("api-key-file: {}", api_key_file);
     let body = format!("{{ 'clientId': '{}', 'clientSecret': '{}'}}", vec[0], vec[1]);
-
-    println!("body: {}", body);
-    //request(format!("http://{}:{}/api/auth/token", host, port), body);
+    request(format!("http://{}:{}/api/auth/token", host, port), body);
 }
 
 //
@@ -72,6 +70,12 @@ fn main() {
 fn request(url: String, body: String) {
     let mut handle = Easy::new();
     let mut data   = Vec::new();
+
+    let mut list = List::new();
+    list.append("accept: application/json").unwrap();
+    list.append("Content-Type: application/json").unwrap();
+    handle.http_headers(list).unwrap();
+
     handle.url(&*url).unwrap();
     handle.post(true).unwrap();
     handle.perform().unwrap();
