@@ -2,6 +2,7 @@ extern crate regex;
 
 use regex::Regex;
 use std::env;
+use std::collections::HashMap;
 
 // --dry-run
 // -h host
@@ -10,13 +11,18 @@ use std::env;
 //
 fn main() {
     let args: Vec<String> = env::args().collect();
+    let mut actionHash    = HashMap::new();
+
     for (i, x) in args.iter().enumerate() {
         if is_option(x) {
-            pop_next(&args, i);
-            // println!("--> {:?}", x);
+            let nextValue = pop_next(&args, i);
+            actionHash.insert(x, nextValue);
         }
     }
-    println!("Hello, world!");
+
+    for (k, v) in actionHash {
+        println!("{}: {}", k, v)
+    }
 }
 
 fn pop_next(args: &Vec<String>, i: usize) -> String {
