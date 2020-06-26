@@ -11,21 +11,33 @@ use std::collections::HashMap;
 //
 fn main() {
     let args: Vec<String> = env::args().collect();
-    let mut actionHash    = HashMap::new();
+    let mut action_hash    = HashMap::new();
 
     for (i, x) in args.iter().enumerate() {
         if is_option(x) {
-            let nextValue = pop_next(&args, i);
-            actionHash.insert(x, nextValue);
+            let next_value = pop_next(&args, i);
+            action_hash.insert(x, next_value);
         }
         if is_stand_alone_option(x) {
-            actionHash.insert(x, "".to_string());
+            action_hash.insert(x, "".to_string());
         }
     }
+    
+    let mut host         = safe_get(&action_hash, &"-h".to_string());
+    let mut port         = safe_get(&action_hash, &"-p".to_string());
+    let mut api_key_file = safe_get(&action_hash, &"-f".to_string());
 
-    for (k, v) in actionHash {
+    for (k, v) in action_hash {
         println!("{}: {}", k, v)
     }
+}
+
+fn safe_get(action_hash: &HashMap<&String, String>, key: &String) -> String {
+    if ! &action_hash.contains_key(key) {
+        return "".to_string();
+    }
+    return (&action_hash[&*key]).to_string();
+
 }
 
 fn pop_next(args: &Vec<String>, i: usize) -> String {
