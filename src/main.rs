@@ -1,14 +1,10 @@
 extern crate regex;
 
+use curl::easy::Easy;
 use regex::Regex;
-use std::env;
 use std::collections::HashMap;
+use std::env;
 
-// --dry-run
-// -h host
-// -p port
-// -f api-key-file
-//
 fn main() {
     let args: Vec<String> = env::args().collect();
     let mut action_hash    = HashMap::new();
@@ -23,13 +19,36 @@ fn main() {
         }
     }
     
+    let mut action       = safe_get(&action_hash, &"-a".to_string());
     let mut host         = safe_get(&action_hash, &"-h".to_string());
     let mut port         = safe_get(&action_hash, &"-p".to_string());
     let mut api_key_file = safe_get(&action_hash, &"-f".to_string());
     let mut dry_run      = &action_hash.contains_key(&"--dry-run".to_string());
+    let mut help         = &action_hash.contains_key(&"--help"   .to_string());
+    //
+    // TODO need to set json data body set too...
+    //
+    if help == &true {
+        println!("kogeki --help ... help");
+        println!("kogeki -a [action] -h [URL] -p [PORT] -f [API-KEY-FILE-PATH]");
+        println!("\nactions:");
+        println!("ce: create employee");
+        println!("le: list employees");
+        println!("");
+        return;
+    }
 
+    // if host missing http:// it should be complemented
+    // if it starts from https:// needs to replace it with http 
     println!("url:          {}:{}", host, port);
     println!("api-key-file: {}", api_key_file);
+}
+
+//
+// using curl module, request to the target with parameters...
+//
+fn request() {
+
 }
 
 fn safe_get(action_hash: &HashMap<&String, String>, key: &String) -> String {
