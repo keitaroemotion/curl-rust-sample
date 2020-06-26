@@ -4,6 +4,7 @@ use curl::easy::Easy;
 use regex::Regex;
 use std::collections::HashMap;
 use std::env;
+use std::fs;
 use std::io::{stdin, Read};
 use std::io::{stdout, Write};
 
@@ -42,21 +43,40 @@ fn main() {
 
     // if host missing http:// it should be complemented
     // if it starts from https:// needs to replace it with http 
+
+    let contents = fs::read_to_string(&api_key_file)
+                       .expect("Something went wrong reading the file");
+
+    let mut vec = Vec::new();
+    for line in contents.split("\n") {
+        // TODO: needs refactor
+        if (&line).starts_with("Client ID=") {
+            vec.push((&line).replace("Client ID=", ""));
+        }
+        if (&line).starts_with("Client Secret=") {
+            vec.push((&line).replace("Client Secret=", ""));
+        }
+    }
+
     println!("url:          {}:{}", host, port);
     println!("api-key-file: {}", api_key_file);
-    request(format!("http://{}:{}/api/auth/token", host, port));
+    let body = format!("{{ 'clientId': '{}', 'clientSecret': '{}'}}", vec[0], vec[1]);
+
+    println!("body: {}", body);
+    //request(format!("http://{}:{}/api/auth/token", host, port), body);
 }
 
 //
 // using curl module, request to the target with parameters...
 //
-fn request(url: String) {
+fn request(url: String, body: String) {
     let mut handle = Easy::new();
     let mut data   = Vec::new();
     handle.url(&*url).unwrap();
     handle.post(true).unwrap();
     handle.perform().unwrap();
     {
+        handle.post_field_size(body.as_bytes().len() as u64).unwrap();
         let mut transfer = handle.transfer();
         transfer.write_function(|into| {
             data.extend_from_slice(into);
@@ -64,8 +84,17 @@ fn request(url: String) {
         }).unwrap();
         transfer.perform().unwrap();
     }
+    //handle.perform().unwrap();
+    //{
+    //    let mut transfer = handle.transfer();
+    //    transfer.write_function(|into| {
+    //        data.extend_from_slice(into);
+    //        Ok(stdout().write(into).unwrap())
+    //    }).unwrap();
+    //    transfer.perform().unwrap();
+    //}
+    //println!("{:?}", String::from_utf8(data).unwrap());
     println!("{:?}", String::from_utf8(data).unwrap());
-    //println!("---> {:?}", x);
 }
 
 fn safe_get(action_hash: &HashMap<&String, String>, key: &String) -> String {
